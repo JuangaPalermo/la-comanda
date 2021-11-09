@@ -45,9 +45,8 @@ class Empleado {
                                                                               WHERE empleadoID = :id 
                                                                               AND empleadoFechaBaja IS NULL");
                                                                              
-            $fecha = new DateTime(date("Y-m-d"));
             $consulta->bindValue(':id', $idEmpleado, PDO::PARAM_INT);
-            $consulta->bindValue(':fechaBaja', date_format($fecha, 'Y-m-d H:i:s'));
+            $consulta->bindValue(':fechaBaja', date("Y-m-d"));
             $consulta->bindValue(':empleadoEstado', EMPLEADO_BAJA, PDO::PARAM_STR);
             $consulta->bindValue(':empleadoDisponible', FALSE, PDO::PARAM_BOOL);
             if(!$consulta->execute()){
