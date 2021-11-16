@@ -78,7 +78,7 @@ class PedidoController extends Pedido implements IApiUsable {
         return $response
         ->withHeader('Content-Type', 'application/json');
     }
-
+    
     //declared in IApiUsable
     public function BorrarUno($request, $response, $args)
     {
@@ -141,7 +141,6 @@ class PedidoController extends Pedido implements IApiUsable {
         return $response
         ->withHeader('Content-Type', 'application/json');
     }
-
 
 }
 

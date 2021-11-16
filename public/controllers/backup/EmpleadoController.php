@@ -18,6 +18,8 @@ class EmpleadoController extends Empleado implements IApiUsable {
             $empleado->empleadoPerfil = strtolower($parametros['empleadoPerfil']);
             $empleado->empleadoNombre = $parametros['empleadoNombre'];
             $empleado->empleadoApellido = $parametros['empleadoApellido'];
+            $empleado->empleadoCorreo = $parametros['empleadoCorreo'];
+            $empleado->empleadoClave = $parametros['empleadoClave'];
             $empleado->empleadoEstado = EMPLEADO_DISPONIBLE;
             $empleado->empleadoDisponible = TRUE;
             $empleado->empleadoFechaAlta = date('Y-m-d');

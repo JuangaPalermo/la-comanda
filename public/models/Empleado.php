@@ -9,6 +9,8 @@ class Empleado {
     public $empleadoPerfil;
     public $empleadoNombre;
     public $empleadoApellido;
+    public $empleadoCorreo;
+    public $empleadoClave;
     public $empleadoEstado;
     public $empleadoDisponible;
     public $empleadoFechaAlta;
@@ -17,12 +19,14 @@ class Empleado {
     //Alta
         public function crearempleado()
         {
-            $objAccesoDatos = AccesoDatos::obtenerInstancia();
-            $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO empleado (empleadoPerfil, empleadoNombre, empleadoApellido, empleadoEstado, empleadoDisponible, empleadoFechaAlta, empleadoFechaBaja) VALUES (:empleadoPerfil, :empleadoNombre, :empleadoApellido, :empleadoEstado, :empleadoDisponible, :empleadoFechaAlta, :empleadoFechaBaja)");
+            $objAccesoDatos = AccesoDatos::obtenerInstancia(); 
+            $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO empleado (empleadoPerfil, empleadoNombre, empleadoApellido, empleadoCorreo, empleadoClave, empleadoEstado, empleadoDisponible, empleadoFechaAlta, empleadoFechaBaja) VALUES (:empleadoPerfil, :empleadoNombre, :empleadoApellido, :empleadoCorreo, :empleadoClave, :empleadoEstado, :empleadoDisponible, :empleadoFechaAlta, :empleadoFechaBaja)");
 
             $consulta->bindValue(':empleadoPerfil', $this->empleadoPerfil, PDO::PARAM_STR);
             $consulta->bindValue(':empleadoNombre', $this->empleadoNombre, PDO::PARAM_STR);
             $consulta->bindValue(':empleadoApellido', $this->empleadoApellido, PDO::PARAM_STR);
+            $consulta->bindValue(':empleadoCorreo', $this->empleadoCorreo, PDO::PARAM_STR);
+            $consulta->bindValue(':empleadoClave', password_hash($this->empleadoClave, PASSWORD_DEFAULT), PDO::PARAM_STR);
             $consulta->bindValue(':empleadoEstado', $this->empleadoEstado, PDO::PARAM_STR);
             $consulta->bindValue(':empleadoDisponible', $this->empleadoDisponible, PDO::PARAM_BOOL);
             $consulta->bindValue(':empleadoFechaAlta', $this->empleadoFechaAlta, PDO::PARAM_STR);
@@ -85,17 +89,26 @@ class Empleado {
             public static function obtenerEmpleado($idEmpleado)
             {
                 $objAccesoDatos = AccesoDatos::obtenerInstancia();
-                $consulta = $objAccesoDatos->prepararConsulta("SELECT empleadoID as empleadoID, 
-                                                                      empleadoPerfil as empleadoPerfil, 
-                                                                      empleadoNombre as empleadoNombre,
-                                                                      empleadoApellido as empleadoApellido,
-                                                                      empleadoEstado as empleadoEstado,
-                                                                      empleadoDisponible as empleadoDisponible,
-                                                                      empleadoFechaAlta as empleadoFechaAlta,
-                                                                      empleadoFechaBaja as empleadoFechaBaja
-                                                                      FROM empleado 
-                                                                      WHERE empleadoID = :idEmpleado");
+                $consulta = $objAccesoDatos->prepararConsulta("SELECT *
+                                                               FROM empleado 
+                                                               WHERE empleadoID = :idEmpleado");
                 $consulta->bindValue(':idEmpleado', $idEmpleado, PDO::PARAM_STR);
+                if(!$consulta->execute()){
+                    throw new Exception("Error al realizar la consulta.");
+                } else if ($consulta->rowCount() == 0){
+                    throw new Exception("No hay empleados con ese ID.");
+                }
+                
+                return $consulta->fetchObject('Empleado');
+            }
+
+            public static function obtenerEmpleadoPorCorreo($empleadoCorreo)
+            {
+                $objAccesoDatos = AccesoDatos::obtenerInstancia();
+                $consulta = $objAccesoDatos->prepararConsulta("SELECT *
+                                                               FROM empleado 
+                                                               WHERE empleadoCorreo = :empleadoCorreo");
+                $consulta->bindValue(':empleadoCorreo', $empleadoCorreo, PDO::PARAM_STR);
                 if(!$consulta->execute()){
                     throw new Exception("Error al realizar la consulta.");
                 } else if ($consulta->rowCount() == 0){
@@ -109,15 +122,8 @@ class Empleado {
             public function obtenerTodos()
             {
                 $objAccesoDatos = AccesoDatos::obtenerInstancia();
-                $consulta = $objAccesoDatos->prepararConsulta("SELECT empleadoID as empleadoID, 
-                                                                      empleadoPerfil as empleadoPerfil, 
-                                                                      empleadoNombre as empleadoNombre,
-                                                                      empleadoApellido as empleadoApellido,
-                                                                      empleadoEstado as empleadoEstado,
-                                                                      empleadoDisponible as empleadoDisponible,
-                                                                      empleadoFechaAlta as empleadoFechaAlta,
-                                                                      empleadoFechaBaja as empleadoFechaBaja
-                                                                      FROM empleado");
+                $consulta = $objAccesoDatos->prepararConsulta("SELECT *
+                                                               FROM empleado");
                 if(!$consulta->execute()){
                     throw new Exception("Error al realizar la consulta.");
                 }
@@ -128,6 +134,23 @@ class Empleado {
         //PorEstado
         //PorDisponibilidad
     
+    //utils
+        public function logearUsuario()
+        {
+            //traigo el usuario
+            $empleadoBBDD = self::obtenerEmpleadoPorCorreo($this->empleadoCorreo);
+
+            //valido los datos con lo que traje.
+            if(!$empleadoBBDD)
+            {
+                throw new Exception('No existe ningun empleado con ese correo');
+            } else if (!password_verify($this->empleadoClave, $empleadoBBDD->empleadoClave)) {
+                throw new Exception('No coincide la clave');
+            } else {
+                return $empleadoBBDD;
+            }
+        }
+
     //validations
 
         public function Validate()

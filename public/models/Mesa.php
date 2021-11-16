@@ -4,6 +4,7 @@ class Mesa {
 
     public $mesaID;
     public $mesaEstado;
+    public $mesaUsos;
 
     //Alta
         public function crearMesa()
@@ -47,6 +48,40 @@ class Mesa {
 
             if(!$consulta->execute()){
                 throw new Exception("Error al realizar la consulta.");
+            }
+        }
+
+        public function mesaComiendo($idMesa)
+        {
+            $objAccesoDato = AccesoDatos::obtenerInstancia();
+            $consulta = $objAccesoDato->prepararConsulta("UPDATE mesa 
+                                                          SET mesaEstado = :mesaEstado
+                                                          WHERE mesaID = :id");
+
+            $consulta->bindValue(':mesaEstado', $this->mesaEstado, PDO::PARAM_STR);
+            $consulta->bindValue(':id', $idMesa, PDO::PARAM_INT);
+
+            if(!$consulta->execute()){
+                throw new Exception("Error al realizar la consulta.");
+            } else if ($consulta->rowCount() == 0){
+                throw new Exception("No hay mesas con ese ID.");
+            }
+        }
+
+        public function cerrarMesa($idMesa)
+        {
+            $objAccesoDato = AccesoDatos::obtenerInstancia();
+            $consulta = $objAccesoDato->prepararConsulta("UPDATE mesa 
+                                                          SET mesaEstado = :mesaEstado,
+                                                          mesaUsos = :mesaUsos
+                                                          WHERE mesaID = :id");
+
+            $consulta->bindValue(':mesaEstado', $this->mesaEstado, PDO::PARAM_STR);
+            $consulta->bindValue(':mesaUsos', $this->mesaUsos, PDO::PARAM_INT);
+            $consulta->bindValue(':id', $idMesa, PDO::PARAM_INT);
+
+            if(!$consulta->execute()){
+                throw new Exception("Error al realizar la consulta.");
             } else if ($consulta->rowCount() == 0){
                 throw new Exception("No hay mesas con ese ID.");
             }
@@ -56,10 +91,9 @@ class Mesa {
             public static function obtenerMesa($idMesa)
             {
                 $objAccesoDatos = AccesoDatos::obtenerInstancia();
-                $consulta = $objAccesoDatos->prepararConsulta("SELECT mesaID as mesaID, 
-                                                                      mesaEstado as mesaEstado
-                                                                      FROM mesa 
-                                                                      WHERE mesaID = :idMesa");
+                $consulta = $objAccesoDatos->prepararConsulta("SELECT *
+                                                               FROM mesa 
+                                                               WHERE mesaID = :idMesa");
                 $consulta->bindValue(':idMesa', $idMesa, PDO::PARAM_STR);
                 if(!$consulta->execute()){
                     throw new Exception("Error al realizar la consulta.");
@@ -69,14 +103,27 @@ class Mesa {
                 
                 return $consulta->fetchObject('Mesa');
             }
-        //por estado
+        //mas usada
+            public static function obtenerMesaMasUsada()
+            {
+                $objAccesoDatos = AccesoDatos::obtenerInstancia();
+                $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM mesa
+                                                               ORDER BY mesaUsos DESC
+                                                               LIMIT 1");
+                if(!$consulta->execute()){
+                    throw new Exception("Error al realizar la consulta.");
+                } else if ($consulta->rowCount() == 0){
+                    throw new Exception("No hay mesas para esta consulta");
+                }
+                
+                return $consulta->fetchAll(PDO::FETCH_CLASS, 'Mesa');
+            }
         //todos
             public static function obtenerTodos()
             {
                 $objAccesoDatos = AccesoDatos::obtenerInstancia();
-                $consulta = $objAccesoDatos->prepararConsulta("SELECT mesaID as mesaID, 
-                                                                      mesaEstado as mesaEstado
-                                                                      FROM mesa");
+                $consulta = $objAccesoDatos->prepararConsulta("SELECT *
+                                                               FROM mesa");
                 if(!$consulta->execute()){
                     throw new Exception("Error al realizar la consulta.");
                 }
