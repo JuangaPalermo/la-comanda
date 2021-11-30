@@ -74,8 +74,8 @@ date_default_timezone_set("America/Argentina/Buenos_Aires");
   });
 
   $app->group('/pedido', function (RouteCollectorProxy $group){
-    $group->get('[/]', \PedidoController::class . ':TraerTodos'); //me trae todos indistintamente del estado.
-    $group->get('/{pedidoCodigo}', \PedidoController::class . ':TraerUno'); //me trae un array con todos los productos del ped.
+    $group->get('[/]', \PedidoController::class . ':TraerTodos');
+    $group->get('/{pedidoCodigo}', \PedidoController::class . ':TraerUno');
     $group->post('[/]', \PedidoController::class . ':CargarUno');
     $group->delete('[/]', \PedidoController::class . ':BorrarUno');
     $group->put('[/]', \PedidoController::class . ':ModificarUno');

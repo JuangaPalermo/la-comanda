@@ -1,6 +1,7 @@
 <?php
 
 require_once './models/Empleado.php';
+require_once './models/Logeo.php';
 
 class LoginController {
 
@@ -23,6 +24,14 @@ class LoginController {
                             'perfil' => $empleadoObtenido->empleadoPerfil,
                             'id' => $empleadoObtenido->empleadoID);
             $token = AutentificadorJWT::CrearToken($datos);
+
+            $logeo = new Logeo();
+            $logeo->perfilEmpleado = $empleadoObtenido->empleadoPerfil;
+            $logeo->idEmpleado = $empleadoObtenido->empleadoID;
+            $logeo->correoEmpleado = $empleadoObtenido->empleadoCorreo;
+            $logeo->fechaLogeo = date("Y-m-d H:i:s");
+
+            $logeo->registrarLogeo();
 
             $payload = json_encode(array("mensaje" => "Se ha logeado el usuario", "jwt" => $token, "perfil" => $empleadoObtenido->empleadoPerfil, "id" => $empleadoObtenido->empleadoID));
 
